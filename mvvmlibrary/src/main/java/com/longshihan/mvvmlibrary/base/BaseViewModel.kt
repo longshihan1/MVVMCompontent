@@ -5,12 +5,15 @@ import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.Lifecycle
 import android.arch.lifecycle.LifecycleOwner
 import android.arch.lifecycle.Observer
+import android.os.Bundle
 import com.longshihan.mvvmlibrary.bus.event.SingleLiveEvent
+import com.longshihan.mvvmlibrary.bus.event.UIChangeLiveData
 import com.trello.rxlifecycle2.LifecycleProvider
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.functions.Consumer
 import java.lang.ref.WeakReference
+import java.util.HashMap
 
 /**
  * Created by LONGHE001.
@@ -19,16 +22,14 @@ import java.lang.ref.WeakReference
  * @des
  * @function
  */
-class BaseViewModel<M : BaseModel> @JvmOverloads constructor(application: Application, model1: M? = null) :
-    AndroidViewModel(application), IBaseViewModel, Consumer<Disposable> {
-    var model: M? = null
+abstract class BaseViewModel @JvmOverloads constructor(application: Application) :
+    AndroidViewModel(application), IBaseViewModel, Consumer<Disposable>, IModel {
     //管理RxJava，主要针对RxJava异步操作造成的内存泄漏
     private var mCompositeDisposable: CompositeDisposable? = null
     //弱引用持有
-    var lifecycle: WeakReference<LifecycleProvider<*>>? = null
+    var uc: UIChangeLiveData? = null
 
     init {
-        this.model = model1
         mCompositeDisposable = CompositeDisposable()
     }
 
@@ -40,50 +41,113 @@ class BaseViewModel<M : BaseModel> @JvmOverloads constructor(application: Applic
         mCompositeDisposable!!.add(disposable)
     }
 
+
+    fun getUC(): UIChangeLiveData {
+        if (uc == null) {
+            uc = UIChangeLiveData()
+        }
+        return uc!!
+    }
+
+    fun showDialog() {
+        showDialog("请稍后...")
+    }
+
+    fun showDialog(title: String) {
+        uc!!.showDialogEvent.postValue(title)
+    }
+
+    fun dismissDialog() {
+        uc!!.dismissDialogEvent.call()
+    }
+
     /**
-     * 注入RxLifecycle生命周期
+     * 跳转页面
      *
-     * @param lifecycle
+     * @param clz 所跳转的目的Activity类
      */
-    fun injectLifecycleProvider(lifecycle: LifecycleProvider<*>) {
-        this.lifecycle = WeakReference(lifecycle)
+    fun startActivity(clz: Class<*>) {
+        startActivity(clz, null)
     }
 
-    fun getLifecycleProvider(): LifecycleProvider<*>? {
-        return lifecycle!!.get()
+    /**
+     * 跳转页面
+     *
+     * @param clz    所跳转的目的Activity类
+     * @param bundle 跳转所携带的信息
+     */
+    fun startActivity(clz: Class<*>, bundle: Bundle?) {
+        val params = HashMap<String, Any>()
+        params[ParameterField.CLASS] = clz
+        if (bundle != null) {
+            params[ParameterField.BUNDLE] = bundle
+        }
+        uc!!.startActivityEvent.postValue(params)
     }
 
-    override fun onAny(owner: LifecycleOwner, event: Lifecycle.Event) {
-
+    /**
+     * 跳转容器页面
+     *
+     * @param canonicalName 规范名 : Fragment.class.getCanonicalName()
+     */
+    fun startContainerActivity(canonicalName: String) {
+        startContainerActivity(canonicalName, null)
     }
 
-    override fun onCreate() {
-
+    /**
+     * 跳转容器页面
+     *
+     * @param canonicalName 规范名 : Fragment.class.getCanonicalName()
+     * @param bundle        跳转所携带的信息
+     */
+    fun startContainerActivity(canonicalName: String, bundle: Bundle?) {
+        val params = HashMap<String, Any>()
+        params[ParameterField.CANONICAL_NAME] = canonicalName
+        if (bundle != null) {
+            params[ParameterField.BUNDLE] = bundle
+        }
+        uc!!.startContainerActivityEvent.postValue(params)
     }
 
-    override fun onDestroy() {
-
+    /**
+     * 关闭界面
+     */
+    fun finish() {
+        uc!!.finishEvent.call()
     }
 
-    override fun onStart() {
-
+    /**
+     * 返回上一层
+     */
+    fun onBackPressed() {
+        uc!!.onBackPressedEvent.call()
     }
 
-    override fun onStop() {
+    override fun onAny(owner: LifecycleOwner, event: Lifecycle.Event) {}
 
+    override fun onCreate() {}
+
+    override fun onDestroy() {}
+
+    override fun onStart() {}
+
+    override fun onStop() {}
+
+    override fun onResume() {}
+
+    override fun onPause() {}
+
+    fun registerRxBus() {}
+
+    fun removeRxBus() {}
+
+    override fun onCleared() {
+        super.onCleared()
     }
 
-    override fun onResume() {
-
+    object ParameterField {
+        var CLASS = "CLASS"
+        var CANONICAL_NAME = "CANONICAL_NAME"
+        var BUNDLE = "BUNDLE"
     }
-
-    override fun onPause() {
-
-    }
-
-    @Throws(Exception::class)
-    override fun accept(disposable: Disposable) {
-
-    }
-
 }
