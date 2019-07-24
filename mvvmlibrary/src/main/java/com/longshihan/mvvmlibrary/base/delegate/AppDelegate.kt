@@ -5,12 +5,15 @@ import android.content.ComponentCallbacks2
 import android.content.Context
 import com.longshihan.mvvmlibrary.base.App
 import com.longshihan.mvvmlibrary.di.component.AppComponent
+import com.longshihan.mvvmlibrary.di.component.AppComponentImpl
 import com.longshihan.mvvmlibrary.di.module.AppModule
 import com.longshihan.mvvmlibrary.di.module.ClientModule
+import com.longshihan.mvvmlibrary.di.module.GlobalConfigModule
 import com.longshihan.mvvmlibrary.intergration.ActivityLifecycle
 import com.longshihan.mvvmlibrary.intergration.ConfigModule
 import com.longshihan.mvvmlibrary.utils.ManifestParser
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 /**
@@ -20,13 +23,11 @@ import java.util.*
  * @function
  */
 class AppDelegate(application: Application) : App, AppLifecycles {
-    private val mAppComponent: AppComponent? = null
+    private var mAppComponent: AppComponent? = null
     var mActivityLifecycle: ActivityLifecycle? = null
     var application: Application = application
     private var mModules: MutableList<ConfigModule> = ArrayList()
     private val mAppLifecycles: MutableList<AppLifecycles> = ArrayList()
-    private val mActivityLifecycles: MutableList<Application.ActivityLifecycleCallbacks> = ArrayList()
-    private val mComponentCallback: ComponentCallbacks2? = null
 
     init {
         mModules = ManifestParser(application).parse()
@@ -48,20 +49,37 @@ class AppDelegate(application: Application) : App, AppLifecycles {
     }
 
     override fun onCreate(application: Application) {
-        val appModule=AppModule(application)
-        val clientModule=ClientModule()
-
+        val appModule = AppModule(application)
+        val clientModule = ClientModule()
+        mAppComponent = AppComponentImpl(appModule, clientModule,
+            getGlobalConfigModule(application, mModules), application
+        )
         mActivityLifecycle = ActivityLifecycle()
         application.registerActivityLifecycleCallbacks(mActivityLifecycle)
         for (lifecycle in mAppLifecycles) {
             lifecycle.onCreate(application)
         }
+        mModules= ArrayList()
     }
 
     override fun onTerminate(application: Application) {
         for (lifecycle in mAppLifecycles) {
             lifecycle.onTerminate(application)
         }
+    }
+
+    /**
+     * 需要在AndroidManifest中声明[ConfigModule]的实现类,和Glide的配置方式相似
+     *
+     * @return
+     */
+    private fun getGlobalConfigModule(context: Context, modules: List<ConfigModule>): GlobalConfigModule {
+        val builder = GlobalConfigModule.builder()
+        //遍历 ConfigModule 集合, 给全局配置 GlobalConfigModule 添加参数
+        for (module in modules) {
+            module.applyOptions(context, builder)
+        }
+        return builder.build()
     }
 
 }

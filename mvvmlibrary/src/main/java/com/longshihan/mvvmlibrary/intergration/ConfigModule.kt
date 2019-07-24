@@ -3,6 +3,7 @@ package com.longshihan.mvvmlibrary.intergration
 import android.app.Application
 import android.content.Context
 import com.longshihan.mvvmlibrary.base.delegate.AppLifecycles
+import com.longshihan.mvvmlibrary.di.module.GlobalConfigModule
 
 
 /**
@@ -18,7 +19,7 @@ interface ConfigModule {
      * @param context
      * @param builder
      */
-//    fun applyOptions(context: Context, builder: GlobalConfigModule.Builder)
+    fun applyOptions(context: Context, builder: GlobalConfigModule.Builder)
 
     /**
      * 使用[AppLifecycles]在Application的生命周期中注入一些操作

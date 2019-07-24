@@ -5,6 +5,8 @@ import android.content.Context
 import android.support.annotation.Nullable
 import com.google.gson.Gson
 import com.longshihan.mvvmlibrary.http.GlobalHttpHandler
+import com.longshihan.mvvmlibrary.http.GlobalHttpHeaderIntercepter
+import com.longshihan.mvvmlibrary.http.HttpURL
 import okhttp3.HttpUrl
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -31,10 +33,10 @@ class ClientModule {
      */
     fun provideRetrofit(
         application: Application, configuration: RetrofitConfiguration?,
-        builder: Retrofit.Builder, client: OkHttpClient,
-        httpUrl: HttpUrl, gson: Gson
+        client: OkHttpClient, gson: Gson
     ): Retrofit {
-        builder.baseUrl(httpUrl)//域名
+        var builder = Retrofit.Builder()
+        builder.baseUrl(HttpUrl.parse(HttpURL.baseUrl)!!)//域名
             .client(client)//设置okhttp
 
         configuration?.configRetrofit(application, builder)
@@ -49,21 +51,18 @@ class ClientModule {
      * @param application 上下文
      * @param configuration
      * @param builder
-     * @param intercept 请求之前的拦截器
      * @param interceptors 拦截器集合
      * @param handler
      * @return
      */
     fun provideClient(
-        application: Application, @Nullable configuration: OkhttpConfiguration?,
-        builder: OkHttpClient.Builder, interceptors: List<Interceptor>?,handler: GlobalHttpHandler?
+        application: Application, configuration: OkhttpConfiguration?,
+        interceptors: List<Interceptor>?
     ): OkHttpClient {
+        var builder = OkHttpClient.Builder()
         builder.connectTimeout(TIME_OUT.toLong(), TimeUnit.SECONDS)
             .readTimeout(TIME_OUT.toLong(), TimeUnit.SECONDS)
-
-        if (handler != null)
-            builder.addInterceptor { chain -> chain.proceed(handler.onHttpRequestBefore(chain, chain.request())) }
-
+            .addInterceptor(GlobalHttpHeaderIntercepter())
         if (interceptors != null) {//如果外部提供了interceptor的集合则遍历添加
             for (interceptor in interceptors) {
                 builder.addInterceptor(interceptor)
@@ -73,10 +72,6 @@ class ClientModule {
         return builder.build()
     }
 
-
-    fun provideClientBuilder(): OkHttpClient.Builder {
-        return OkHttpClient.Builder()
-    }
 
     interface RetrofitConfiguration {
         fun configRetrofit(context: Context, builder: Retrofit.Builder)
