@@ -2,9 +2,7 @@ package com.longshihan.mvvmlibrary.di.module
 
 import android.app.Application
 import android.content.Context
-import android.support.annotation.Nullable
 import com.google.gson.Gson
-import com.longshihan.mvvmlibrary.http.GlobalHttpHandler
 import com.longshihan.mvvmlibrary.http.GlobalHttpHeaderIntercepter
 import com.longshihan.mvvmlibrary.http.HttpURL
 import okhttp3.HttpUrl

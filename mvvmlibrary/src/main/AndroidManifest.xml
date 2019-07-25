@@ -1,2 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.longshihan.mvvmlibrary"/>
+          package="com.longshihan.mvvmlibrary">
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <application>
+        <activity
+                android:name=".ContainerActivity"
+                android:configChanges="orientation|keyboardHidden"/>
+        <meta-data android:name="com.longshihan.mvvmlibrary.http.Glide.GlideConfiguration"
+                   android:value="GlideModule"/>
+    </application>
+</manifest>

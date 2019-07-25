@@ -13,7 +13,8 @@ import com.longshihan.mvvmlibrary.di.component.AppComponent
  * @des
  * @function
  */
-class BaseApplication : Application(), App {
+open class BaseApplication : Application(), App {
+
 
     var mAppLifecycles: AppLifecycles? = null
     var instance: BaseApplication? = null
@@ -41,7 +42,8 @@ class BaseApplication : Application(), App {
     }
 
     companion object {
-        lateinit var instance: BaseApplication
+      public  lateinit var instance: BaseApplication
+
     }
 
 }

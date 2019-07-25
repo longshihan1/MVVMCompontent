@@ -15,4 +15,6 @@ interface IBaseView {
      * 初始化界面观察者的监听
      */
     abstract fun initViewObservable()
+
+    abstract fun initViewModel(): BaseViewModel?
 }

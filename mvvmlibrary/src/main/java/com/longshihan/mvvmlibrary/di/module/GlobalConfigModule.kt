@@ -2,7 +2,6 @@ package com.longshihan.mvvmlibrary.di.module
 
 import com.longshihan.mvvmlibrary.error.EMPTY
 import com.longshihan.mvvmlibrary.error.ResponseErrorListener
-import com.longshihan.mvvmlibrary.http.GlobalHttpHandler
 import okhttp3.Interceptor
 import okhttp3.internal.Util.threadFactory
 import java.util.concurrent.ExecutorService
@@ -90,19 +89,12 @@ class GlobalConfigModule(builder: Builder) {
     }
 
     class Builder public constructor() {
-        public var handler: GlobalHttpHandler? = null
         public var interceptors: MutableList<Interceptor>? = null
         public var responseErrorListener: ResponseErrorListener? = null
         public var retrofitConfiguration: ClientModule.RetrofitConfiguration? = null
         public var okhttpConfiguration: ClientModule.OkhttpConfiguration? = null
         public var gsonConfiguration: AppModule.GsonConfiguration? = null
         public var executorService: ExecutorService? = null
-
-
-        fun globalHttpHandler(handler: GlobalHttpHandler): Builder {//用来处理http响应结果
-            this.handler = handler
-            return this
-        }
 
         fun addInterceptor(interceptor: Interceptor): Builder {//动态添加任意个interceptor
             if (interceptors == null)

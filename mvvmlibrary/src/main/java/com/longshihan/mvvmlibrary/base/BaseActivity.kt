@@ -1,17 +1,9 @@
 package com.longshihan.mvvmlibrary.base
 
-import android.app.Dialog
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModel
-import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.os.Bundle
-import android.os.Messenger
-import android.os.PersistableBundle
-import android.support.v4.app.FragmentActivity
 import android.support.v7.app.AppCompatActivity
 import com.longshihan.mvvmlibrary.ContainerActivity
-import java.lang.reflect.ParameterizedType
 
 /**
  * Created by LONGHE001.
@@ -21,17 +13,14 @@ import java.lang.reflect.ParameterizedType
  */
 abstract class BaseActivity<VM : BaseViewModel> : AppCompatActivity(), IBaseView {
     protected var viewModel: BaseViewModel? = null
-    var dialog: Dialog? = null
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel = initViewModel()
-        if (viewModel == null) {
-            viewModel = createViewModel(this, BaseViewModel::class.java)
-        }
+        setContentView(initView(savedInstanceState))
         //让ViewModel拥有View的生命周期感应
-        lifecycle.addObserver(viewModel!!)
+        if (viewModel != null) {
+            lifecycle.addObserver(viewModel!!)
+        }
         //页面接受的参数方法
         initParam()
         //页面数据初始化方法
@@ -42,8 +31,7 @@ abstract class BaseActivity<VM : BaseViewModel> : AppCompatActivity(), IBaseView
         viewModel!!.registerRxBus()
     }
 
-    abstract fun initViewModel(): BaseViewModel
-
+    abstract fun initView(savedInstanceState: Bundle?): Int
 
     /**
      * 跳转页面
@@ -91,16 +79,7 @@ abstract class BaseActivity<VM : BaseViewModel> : AppCompatActivity(), IBaseView
         }
         startActivity(intent)
     }
-    /**
-     * 创建ViewModel
-     *
-     * @param cls
-     * @param <T>
-     * @return
-    </T> */
-    fun <T : ViewModel> createViewModel(activity: FragmentActivity, cls: Class<T>): T {
-        return ViewModelProviders.of(activity).get(cls)
-    }
+
 
     override fun onDestroy() {
         super.onDestroy()

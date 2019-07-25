@@ -7,6 +7,10 @@ package com.longshihan.mvvmlibrary.utils
  * @function
  */
 object MLog {
+    private var IS_SHOW_LOG = false
+    fun init(isShowLog: Boolean) {
+        IS_SHOW_LOG = isShowLog
+    }
     fun d(message:String){
         d(MLog.javaClass.simpleName,message)
     }
